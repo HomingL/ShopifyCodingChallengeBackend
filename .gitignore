@@ -1,0 +1,12 @@
+
+db/
+
+dist/
+
+*.txt
+
+node_modules/
+
+*.png
+
+c-X
