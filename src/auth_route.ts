@@ -13,7 +13,7 @@ authRouter.post("/signup/", async (req, res) => {
   const password = req.body.password;
   try{
     const found = await userdb.findOne({_id: username});
-    if (found) return res.status(409).end(`image ${username} already exists`);
+    if (found) return res.status(409).end(`user ${username} already exists`);
 
     // store password as salted hash
     const salt = crypto.randomBytes(16).toString('base64');
@@ -21,7 +21,7 @@ authRouter.post("/signup/", async (req, res) => {
     hash.update(password);
     const saltedHash = hash.digest('base64');
     userdb.insert(new User(username, salt, saltedHash));
-    return res.json("user " + username + " signed up");
+    return res.json(`user ${username} signed up`);
   }catch(err){
     return res.status(500).end(err);
   }
@@ -45,9 +45,9 @@ authRouter.post("/signin/", async (req, res) => {
           path : '/', 
           maxAge: 60 * 60 * 24 * 7
     }));
-    return res.json("user " + username + " signed in");
+    return res.json(`user ${username} signed in`);
   }catch(err){
-    return
+    return res.status(500).end(err);
   }
 
 });

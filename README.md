@@ -11,3 +11,6 @@ $ npm run watch
 $ npm run dev
 ```
 
+## API Documentation
+
+[Under doc/API_doc.md](https://github.com/HomingL/ShopifyCodingChallengeBackend/blob/main/doc/API_doc.md)

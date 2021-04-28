@@ -10,15 +10,15 @@
         - username: (string) the username of the user
         - password: (string) the password of the user
 - resposne: 200
-    - (string) "username ${your_username} signed up"
+    - (string) "user ${your_username} signed up"
 - response: 409
     - (string) "username ${your_username} already exists"
 - response: 500
     - (string) error message
 ``` 
 $ curl -H "Content-Type: application/json" \
-        -X POST -d '{"username":"alice","password":"alice"}' \
-        -c cookie.txt localhost:3000/auth/signup/
+        -X POST -d '{"username":"user","password":"user"}' \
+        -c cookie.txt localhost:5000/auth/signup/
 ```
 
 
@@ -38,18 +38,14 @@ $ curl -H "Content-Type: application/json" \
 ```
 curl -H "Content-Type: application/json" \
     -X POST \
-    -d '{"username":"alice","password":"alice"}' \
-    -c cookie.txt localhost:3000/auth/signin/
+    -d '{"username":"user","password":"user"}' \
+    -c cookie.txt localhost:5000/auth/signin/
 ```
 
 
 ### Sign out
 - description: Sign in to a user account
 - request: `GET /auth/signout/`
-    - content-type: `application/json`
-    - body: object
-        - username: (string) the username of the user
-        - password: (string) the password of the user
 - resposne: 200
     - (string) "user signed out"
 - response: 401
@@ -58,7 +54,7 @@ curl -H "Content-Type: application/json" \
     - (string) error message
 
 ```
-curl -b cookie.txt -c cookie.txt localhost:3000/auth/signout/
+$ curl -b cookie.txt -c cookie.txt localhost:5000/auth/signout/
 ```
 
 ## Image API
@@ -66,18 +62,16 @@ curl -b cookie.txt -c cookie.txt localhost:3000/auth/signout/
 ### Create 
 - description: create a new image
 - request: `POST /api/images/`
-    - content-type: `application/json`
+    - content-type: `multipart/form-data`
     - body: object
-        - title: (string) the tile of the image
-        - author: (string) the author of the image
-        - url: (string) the url of the image
-
+        - title: (string) the title of the image
+        - picture: (File) the image
 - response: 200
     - content-type `applicaiton/json`
-    - body: object
+    - body: list of image objects
         - _id: (string) the image id
         - title: (string) the title of the image
-        - author: (string) the author of the image
+        - owner_id: (string) owner of the image
         - file: (object) the file object
         - createdAt: (string) the created date
         - updatedAt: (string) the last updated date
@@ -90,50 +84,75 @@ curl -b cookie.txt -c cookie.txt localhost:3000/auth/signout/
 
 $ curl -X POST  \
         -H "Content-Type: multipart/form-data" \
-        -F  author=author-name \
         -F  title=title-name \
-        -F  picture=@~/picture.jpeg \
-        http://localhost:3000/api/images/
+        -F  picture=@./picture.jpeg \
+        http://localhost:5000/api/images/
 ```
 
-### Read
+### Search 
 
-- description: retrieve the latest image
-- request: `GET /api/images/[?page=0]`   
+- description: search public images by text
+- request: `GET /api/images[?textField=your_search&page=0&limit=5]`   
 - response: 200
     - content-type: `application/json`
-    - body: list of objects
-      - _id: (string) the image id
-      - author: (string) the authors username
-      - file: (object) the file object
-      - createdAt: (string) the created date
-      - updatedAt: (string) the last updated date
-    OR
-    when there is no image.
-    - body: empty string
+    - body: list of image objects
+        - _id: (string) the image id
+        - title: (string) the title of the image
+        - owner_id: (string) owner of the image
+        - file: (object) the file object
+        - isPublic: (boolean) the permssion of the image
+        - createdAt: (string) the created date
+        - updatedAt: (string) the last updated date
 - response: 401
     - body: (string) access denied
 - response: 500
     - body: (string) error message
  
 ``` 
-$ curl -X GET 'http://localhost:3000/api/images/?page=0&limited=5'
+$ curl -b cookie.txt -X GET localhost:5000/api/images?textField=your_search&page=0&limit=5
+
+``` 
+
+### Read
+
+- description: retrieve the latest image of a user
+- request: `GET /api/images/:username/[?page=0&limit=5]`   
+- response: 200
+    - content-type: `application/json`
+    - body: list of image ojects
+        - _id: (string) the image id
+        - title: (string) the title of the image
+        - owner_id: (string) owner of the image
+        - file: (object) the file object
+        - isPublic: (boolean) the permssion of the image
+        - createdAt: (string) the created date
+        - updatedAt: (string) the last updated date
+- response: 401
+    - body: (string) access denied
+- response: 500
+    - body: (string) error message
+ 
+``` 
+$ curl -b cookie.txt -X GET localhost:5000/api/images/user?page=0&limit=5
+
 ``` 
 
 ### Read Picture
 
 - description: retrieve the picture of the image
-- request: `GET /api/images/:image/profile/picture/`   
+- request: `GET /api/images/:image/picture/`   
 - response: 200
-    - content-type: `application/json`
+    - content-type: `image/png`
     - body: file
 - response: 401
     - body: (string) access denied
+- response: 404
+    - body: (string) imageId does not exist
 - response: 500
     - body: (string) error message
  
 ``` 
-$ curl -X GET 'http://localhost:3000/api/images/your-image-id/profile/picture/'
+$ curl -b cookie.txt -X GET 'http://localhost:5000/api/images/your-image-id/profile/picture/'
 ``` 
 
 ### Delete
@@ -146,6 +165,7 @@ $ curl -X GET 'http://localhost:3000/api/images/your-image-id/profile/picture/'
       - _id: (string) the image id
       - author: (string) the authors username
       - file: (object) the file object
+      - isPublic: (boolean) the permssion of the image
       - createdAt: (string) the created date
       - updatedAt: (string) the last updated date
 - response: 401
@@ -158,86 +178,31 @@ $ curl -X GET 'http://localhost:3000/api/images/your-image-id/profile/picture/'
     - body: (string) error message
 
 ``` 
-$ curl -X DELETE 'http://localhost:3000/api/images/N92vn2mFlJeRr89s'
+$ curl -b cookie.txt -X DELETE http://localhost:5000/api/images/your-image-id
+
 ``` 
 
-## comment API
+### Update Permission
 
-### Create
-
-- description: create a new comment
-- request: `POST /api/comments/`
+- description: update the permission of the image
+- request: `PATCH /api/images/:image/profile/picture/`
     - content-type: `application/json`
     - body: object
-      - imageId: (string) the imageId of the comment
-      - content: (string) the content of the comment
+      - status: (boolean) the permission of the image. True for public, false for private
 - response: 200
     - content-type: `application/json`
     - body: object
-      - _id: (string) the comment id
-      - imageId: (string) the imageId of the comment
-      - content: (string) the content of the comment
-      - createdAt: (string) the date of the comment
-      - updatedAt: (string) the update date of the comment
-- response: 401
-    - body: (string) access denied
-- response: 500
-    - body: (string) error message
-
-``` 
-$ curl -X POST 
-       -H "Content-Type: `application/json`" 
-       -d '{"content":"hello world","author":"me", "imageId": "1sdaf"} 
-       http://localhost:3000/api/comments/'
-```
-
-### Read
-
-- description: retrieve the last 10 comments 
-- request: `GET /api/comments/[?page=0&limited=10]`   
-- response: 200
-    - content-type: `application/json`
-    - body: list of objects
-      - _id: (string) the comment id
-      - imageId: (string) the imageId of the comment
-      - content: (string) the content of the comment
-      - createdAt: (string) the date of the comment
-      - updatedAt: (string) the update date of the comment
+      - _id: (string) the image id
+      - author: (string) the authors username
+      - file: (object) the file object
+      - isPublic: (boolean) the permssion of the image
+      - createdAt: (string) the created date
+      - updatedAt: (string) the last updated date
 - response: 401
     - body: (string) access denied
 - response: 500
     - body: (string) error message
  
 ``` 
-$ curl  -X GET
-        -H "Content-Type: `application/json`" 
-        http://localhost:3000/api/comments/[?page&limit=10]
+$ curl -b cookie.txt -H "Content-Type: application/json" -X PATCH -d '{"status":false}' localhost:5000/api/images/nMeLiVD2LOjLHiTg/
 ``` 
-  
-### Delete
-  
-- description: delete the comment id
-- request: `DELETE /api/comments/:id/`
-- response: 200
-    - content-type: `application/json`
-    - body: object
-      - _id: (string) the comment id
-      - content: (string) the content of the comment
-      - imageId: (string) the imageId of the comment
-      - createdAt: (string) the date of the comment
-      - updatedAt: (string) the update date of the comment
-- response: 401
-    - body: (string) access denied
-- response: 403
-    - body: (string) forbidden
-- response: 404
-    - body: comment :id does not exists
-- response: 500
-    - body: (string) error message
-
-``` 
-$ curl -X DELETE
-       http://localhost:3000/api/comments/jed5672jd90xg4awo789/
-``` 
-
-
