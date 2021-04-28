@@ -10,14 +10,23 @@ const imageRouter = express.Router();
 
 const upload = multer({ dest: path.join(__dirname, 'uploads')})
 
-const imagedb = Datastore.create({ filename: 'db/images.db', autoload: true})
+const imagedb = Datastore.create({ filename: 'db/images.db', autoload: true, timestampData: true})
 
-// search image by text
+// creates a new image
+imageRouter.post('/', isAuthenticated, upload.single('picture'), (req, res) => {
+  // if isPublic not provided, it is public by default.
+  imagedb.insert(new Image(req.body.title, req.file, req.username!, req.isPublic || true))
+  .then(image => {return res.json(image)})
+  .catch(err => res.status(500).end(err));
+})
+
+// search public images by text
 imageRouter.get('/', async (req, res) => {
   const textField = req.query.textField as string;
   const page = parseInt(req.query.page as string);
   const limit = parseInt(req.query.limit as string);
-  const query = { title:  { $search: new RegExp(`^${textField}`) }, isPublic: true };
+  console.log(textField);
+  const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: true };
   try {
     const images = await imagedb.find(query).sort({createdAt:-1}).skip(page).limit(limit);
     return res.json(images)
@@ -44,12 +53,20 @@ imageRouter.get('/:username', async (req, res) => {
   }
 })
 
-imageRouter.post('/', isAuthenticated, upload.single('picture'), (req, res) => {
-  // if isPublic not provided, it is public by default.
-  imagedb.insert(new Image(req.body.title, req.file, req.username!, req.isPublic || true))
-  .then(image => {return res.json(image)})
-  .catch(err => res.status(500).end(err));
-})
+// retrive the image file
+imageRouter.get('/:image_id/picture', async (req, res) => {
+  const _id = req.params.image_id;
+  try {
+    const image = await imagedb.findOne({_id}) as Image;
+    console.log('got image')
+    if (!image) return res.status(404).end(`imageId ${_id} does not exists`);
+    res.setHeader('Content-Type', image.file.mimetype);
+    return res.sendFile(image.file.path);
+  }catch (err) {
+    return res.status(500).end(err);
+  }
+});
+
 
 imageRouter.delete('/:id/', isAuthenticated, async (req, res) => {
   try {
