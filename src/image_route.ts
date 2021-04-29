@@ -25,7 +25,6 @@ imageRouter.get('/', async (req, res) => {
   const textField = req.query.textField as string;
   const page = parseInt(req.query.page as string);
   const limit = parseInt(req.query.limit as string);
-  console.log(textField);
   const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: true };
   try {
     const images = await imagedb.find(query).sort({createdAt:-1}).skip(page).limit(limit);
@@ -58,7 +57,6 @@ imageRouter.get('/:image_id/picture', async (req, res) => {
   const _id = req.params.image_id;
   try {
     const image = await imagedb.findOne({_id}) as Image;
-    console.log('got image')
     if (!image) return res.status(404).end(`imageId ${_id} does not exists`);
     res.setHeader('Content-Type', image.file.mimetype);
     return res.sendFile(image.file.path);
@@ -72,7 +70,6 @@ imageRouter.delete('/:id/', isAuthenticated, async (req, res) => {
   try {
     const found = await imagedb.find({_id: req.params.id});
     const image: any = found[0];
-    console.log('found!');
     if (!found) return res.status(404).end('image ' + req.params.id + ' does not exists');
     // Prevent a user deleting images from another user (access control)
     if (image.owner_id !== req.session.username) return res.status(403).end("forbidden, cannot delete other user's image");
