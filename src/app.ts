@@ -4,11 +4,10 @@ import authRouter from './auth_route';
 import session from 'express-session';
 import cookie from 'cookie';
 
-const PORT = 5000;
+// const PORT = 5000;
 
-const boot = () => {
+const boot = (mode = 'dev') => {
 
-  console.log("hello world!");
   const app = express();
 
   app.use(urlencoded({ extended: false }));
@@ -20,10 +19,6 @@ const boot = () => {
     saveUninitialized: true,
   }));
 
-  app.use((req, _res, next) => {
-    console.log("HTTP request", req.method, req.url, req.body);
-    next();
-  });
 
   app.get('/', (_, res) => {
     res.send('hello');
@@ -39,12 +34,10 @@ const boot = () => {
     next();
   });
 
-  app.use("/auth", authRouter);
+  app.use("/auth", authRouter(mode));
   app.use('/api/images', imageRouter);
 
-  app.listen(PORT,  () => {
-    console.log(`server started on localhost ${PORT}.`)
-  })
+  return app;
 }
 
 declare module 'express-session' {
@@ -53,4 +46,4 @@ declare module 'express-session' {
   }
 }
 
-boot();
+export default boot;
