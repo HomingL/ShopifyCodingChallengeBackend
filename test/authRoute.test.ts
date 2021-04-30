@@ -1,4 +1,3 @@
-// import { jest } from '@jest/globals';
 import boot from '../src/app';
 import request from 'supertest';
 
@@ -78,10 +77,7 @@ describe('POST /auth/signout/', () => {
     const cookie = signin.headers['set-cookie'];
     console.log(cookie)
 
-    // const agent = request.agent(app);
-    // agent.attachCookies()
     const response = await request(app).get("/auth/signout").set('Cookie', cookie);
-    // console.log(response.headers);
     expect(response.status).toBe(200);
   })
 })

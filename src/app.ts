@@ -35,7 +35,7 @@ const boot = (mode = 'dev') => {
   });
 
   app.use("/auth", authRouter(mode));
-  app.use('/api/images', imageRouter);
+  app.use('/api/images', imageRouter(mode));
 
   return app;
 }

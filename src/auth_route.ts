@@ -70,10 +70,4 @@ export default (env = 'dev') => {
   });
 
   return authRouter;
-
 }
-
-
-
-
-// export default authRouter;
