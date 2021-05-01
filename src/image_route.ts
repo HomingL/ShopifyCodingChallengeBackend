@@ -28,7 +28,7 @@ export default (env = 'dev') => {
     const textField = req.query.textField as string;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
-    const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: true };
+    const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: 'true' };
     try {
       const images = await imagedb.find(query).sort({createdAt:-1}).skip(page).limit(limit);
       return res.json(images)
