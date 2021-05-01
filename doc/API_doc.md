@@ -152,7 +152,7 @@ $ curl -b cookie.txt -X GET localhost:5000/api/images/user?page=0&limit=5
     - body: (string) error message
  
 ``` 
-$ curl -b cookie.txt -X GET 'http://localhost:5000/api/images/your-image-id/profile/picture/'
+$ curl -b cookie.txt -X GET 'http://localhost:5000/api/images/your-image-id/picture/'
 ``` 
 
 ### Delete
@@ -185,7 +185,7 @@ $ curl -b cookie.txt -X DELETE http://localhost:5000/api/images/your-image-id
 ### Update Permission
 
 - description: update the permission of the image
-- request: `PATCH /api/images/:image/profile/picture/`
+- request: `PATCH /api/images/:image`
     - content-type: `application/json`
     - body: object
       - status: (boolean) the permission of the image. True for public, false for private

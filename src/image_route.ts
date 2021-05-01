@@ -56,11 +56,14 @@ export default (env = 'dev') => {
   })
 
   // retrive the image file
-  imageRouter.get('/:image_id/picture', async (req, res) => {
+  imageRouter.get('/:image_id/picture', isAuthenticated, async (req, res) => {
     const _id = req.params.image_id;
     try {
       const image = await imagedb.findOne({_id}) as Image;
       if (!image) return res.status(404).end(`imageId ${_id} does not exists`);
+      console.log(image);
+      console.log('match :', image.owner_id, req.session.username, image.owner_id !== req.session.username, image.isPublic== false, typeof image.isPublic );
+      if (image.isPublic == 'false' && image.owner_id !== req.session.username) return res.status(403).end("forbidden, you cannot retrieve other users' private image");
       res.setHeader('Content-Type', image.file.mimetype);
       return res.sendFile(image.file.path);
     }catch (err) {
@@ -93,7 +96,7 @@ export default (env = 'dev') => {
       const image = await imagedb.findOne({_id: req.params.id}) as Image;
       if (!image) return res.status(404).end("Image id " + req.params.id + " does not exists");
       // only the owner of the image has the permission 
-      if (image.owner_id !== req.session.username) return res.status(404).end("forbidden, cannot change other users photo permission");
+      if (image.owner_id !== req.session.username) return res.status(403).end("forbidden, cannot change other users photo permission");
       image.isPublic = status
       await imagedb.update({_id: req.params.id}, { $set: { isPublic: status} }, {multi: false});
       const updated_image = await imagedb.findOne({_id: req.params.id}) as Image;
