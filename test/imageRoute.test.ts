@@ -1,6 +1,6 @@
 import boot from '../src/app';
 import request from 'supertest';
-import fs from 'fs';
+// import fs from 'fs';
 
 const app = boot('test');
 const memo = {};
