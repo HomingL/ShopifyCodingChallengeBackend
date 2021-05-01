@@ -46,3 +46,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: lihongming1/image-repo:latest
+      -
+        name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
