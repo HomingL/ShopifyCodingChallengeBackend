@@ -20,35 +20,35 @@ describe('POST /api/images/', () => {
     }
   })
 
-  test('create image with Authentication', async () => {
+  // test('create image with Authentication', async () => {
 
     
-    const auth = {
-      username: 'test-username',
-      password: 'test-password',
-    }
+  //   const auth = {
+  //     username: 'test-username',
+  //     password: 'test-password',
+  //   }
 
-    await request(app).post("/auth/signup").send(auth);
-    const signin = await request(app).post("/auth/signin").send(auth);
-    const cookie = signin.headers['set-cookie'];
+  //   await request(app).post("/auth/signup").send(auth);
+  //   const signin = await request(app).post("/auth/signin").send(auth);
+  //   const cookie = signin.headers['set-cookie'];
 
 
-    const fields = [
-      {title: 'title1', isPublic: 'true'},
-      {title: 'title2', isPublic: 'false'},
-      {title: 'title3', isPublic: 'true'},
-  ];
-  for (const field of fields){
-    const response = await request(app).post("/api/images").set('Cookie', cookie).field(field).attach('picture', `${__dirname}/test-image.png`);
-    expect(response.status).toBe(200);
-    const responseBody = JSON.parse(response.text);
-    expect(responseBody.title).toBe(field.title); // check if title matches
-    expect(responseBody.isPublic).toBe(field.isPublic); // check if permission of image matches
-    expect(fs.existsSync(responseBody.file.path)).toBe(true); // checks if the images has been uploaded
-    expect(responseBody.owner_id).toBe(auth.username); // the owner of the image matches the user signed in
-    memo[field.title] = responseBody; // save the id of the image for future tests
-  }
-  })
+  //   const fields = [
+  //     {title: 'title1', isPublic: 'true'},
+  //     {title: 'title2', isPublic: 'false'},
+  //     {title: 'title3', isPublic: 'true'},
+  // ];
+  // for (const field of fields){
+  //   const response = await request(app).post("/api/images").set('Cookie', cookie).field(field).attach('picture', `${__dirname}/test-image.png`);
+  //   expect(response.status).toBe(200);
+  //   const responseBody = JSON.parse(response.text);
+  //   expect(responseBody.title).toBe(field.title); // check if title matches
+  //   expect(responseBody.isPublic).toBe(field.isPublic); // check if permission of image matches
+  //   expect(fs.existsSync(responseBody.file.path)).toBe(true); // checks if the images has been uploaded
+  //   expect(responseBody.owner_id).toBe(auth.username); // the owner of the image matches the user signed in
+  //   memo[field.title] = responseBody; // save the id of the image for future tests
+  // }
+  // })
 })
 
 describe('PATCH /api/images/:id', () => {
