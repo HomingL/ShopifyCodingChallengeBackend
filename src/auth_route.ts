@@ -45,7 +45,6 @@ export default (env = 'dev') => {
       const saltedHashStored = user.saltedHash;
       const saltedHash = crypto.createHmac('sha512', salt).update(password).digest('base64');
       if (saltedHash !== saltedHashStored) return res.status(401).end('access denied, incorrect username or password');
-      console.log('session:', req.session);
       (req.session as any).username = username;
       res.setHeader('Set-Cookie', cookie.serialize('username', username, {
             path : '/', 
@@ -59,9 +58,7 @@ export default (env = 'dev') => {
 
 
   authRouter.get('/signout/', isAuthenticated, function(req, res){
-    req.session.destroy(()=>{
-      console.log(`user session destroyed`);
-    });
+    req.session.destroy(()=>{});
     res.setHeader('Set-Cookie', cookie.serialize('username', '', {
           path : '/', 
           maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds

@@ -30,7 +30,6 @@ const boot = (mode = 'dev') => {
         path : '/', 
         maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
   }));
-    // console.log("HTTP request", req.username, req.method, req.url, req.body);
     next();
   });
 

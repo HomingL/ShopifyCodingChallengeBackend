@@ -48,7 +48,6 @@ export default (env = 'dev') => {
         ? { owner_id: req.params.username, isPublic: true}
         : { owner_id: req.params.username }
       const images = await imagedb.find(query).sort({createdAt:-1}).skip(page).limit(limit);
-      console.log('images: ', images);
       return res.json(images);
     }catch (err){
       return res.status(500).end(err);
@@ -61,8 +60,6 @@ export default (env = 'dev') => {
     try {
       const image = await imagedb.findOne({_id}) as Image;
       if (!image) return res.status(404).end(`imageId ${_id} does not exists`);
-      console.log(image);
-      console.log('match :', image.owner_id, req.session.username, image.owner_id !== req.session.username, image.isPublic== false, typeof image.isPublic );
       if (image.isPublic == 'false' && image.owner_id !== req.session.username) return res.status(403).end("forbidden, you cannot retrieve other users' private image");
       res.setHeader('Content-Type', image.file.mimetype);
       return res.sendFile(image.file.path);
