@@ -59,9 +59,7 @@ export default (env = 'dev') => {
 
 
   authRouter.get('/signout/', isAuthenticated, function(req, res){
-    req.session.destroy(()=>{
-      console.log(`user session destroyed`);
-    });
+    req.session.destroy(()=>{});
     res.setHeader('Set-Cookie', cookie.serialize('username', '', {
           path : '/', 
           maxAge: 60 * 60 * 24 * 7 // 1 week in number of seconds
