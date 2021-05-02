@@ -43,6 +43,9 @@ Under [doc/API_doc.md](https://github.com/HomingL/ShopifyCodingChallengeBackend/
 ## Features Implemented
 
 - User Input Validation
+  - type check
+  - no empty string
+  - input sanitization (prevent SQL Injection)
 
 - Authentication
   - sign up
