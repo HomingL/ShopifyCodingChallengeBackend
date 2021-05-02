@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import cookie from 'cookie';
 import isAuthenticated from './middlewares/isAuth';
 import User from './classes/user';
+import { isNonEmptyString, validateInput } from './middlewares/inputValidation';
 
 
 
@@ -14,7 +15,11 @@ export default (env = 'dev') => {
   const authRouter = express.Router();
 
 
-  authRouter.post("/signup/", async (req, res) => {
+  authRouter.post("/signup/", [
+   isNonEmptyString('username', 'Username must be a string value', 'Username cannot be empty'),
+   isNonEmptyString('password', 'Password must be a string value', 'Password cannot be empty'),
+], validateInput, async (req, res) => {
+
     const username = req.body.username;
     const password = req.body.password;
     try{
@@ -34,7 +39,10 @@ export default (env = 'dev') => {
   });
 
 
-  authRouter.post("/signin/", async (req, res) => {
+  authRouter.post("/signin/", [
+    isNonEmptyString('username', 'Username must be a string value', 'Username cannot be empty'),
+    isNonEmptyString('password', 'Password must be a string value', 'Password cannot be empty'),
+ ], validateInput, async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     try {
@@ -45,7 +53,6 @@ export default (env = 'dev') => {
       const saltedHashStored = user.saltedHash;
       const saltedHash = crypto.createHmac('sha512', salt).update(password).digest('base64');
       if (saltedHash !== saltedHashStored) return res.status(401).end('access denied, incorrect username or password');
-      console.log('session:', req.session);
       (req.session as any).username = username;
       res.setHeader('Set-Cookie', cookie.serialize('username', username, {
             path : '/', 

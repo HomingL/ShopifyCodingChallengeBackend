@@ -5,6 +5,8 @@ import Image from './classes/image';
 import multer from 'multer';
 import fs from 'fs';
 import isAuthenticated from './middlewares/isAuth';
+import { query, param, check } from 'express-validator';
+import { validateInput } from './middlewares/inputValidation';
 
 export default (env = 'dev') => {
   const dbPath = env == 'test'? 'db/test/images.db': 'db/images.db';
@@ -18,17 +20,23 @@ export default (env = 'dev') => {
   // creates a new image
   imageRouter.post('/', isAuthenticated, upload.single('picture'), (req, res) => {
     // if isPublic not provided, it is public by default.
-    imagedb.insert(new Image(req.body.title, req.file, req.username!, req.body.isPublic || true))
+    if (req.body.title === undefined || req.body.isPublic === undefined) return res.status(422).end('title property is not provided');
+    imagedb.insert(new Image(req.body.title, req.file, req.username!, req.body.isPublic))
     .then(image => {return res.json(image)})
     .catch(err => res.status(500).end(err));
   })
 
   // search public images by text
-  imageRouter.get('/', async (req, res) => {
+  imageRouter.get('/', [
+    query('textField')
+    .isString().withMessage('textField must be string type')
+    .not().isEmpty().withMessage('textField cannot be empty')
+    .trim().escape()
+  ], validateInput, async (req, res) => {
     const textField = req.query.textField as string;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
-    const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: true };
+    const query = { title:  { $regex: new RegExp(`^${textField}`) }, isPublic: 'true' };
     try {
       const images = await imagedb.find(query).sort({createdAt:-1}).skip(page).limit(limit);
       return res.json(images)
@@ -38,7 +46,10 @@ export default (env = 'dev') => {
   })
 
   // get latest images of a user by user id with pagination
-  imageRouter.get('/:username', async (req, res) => {
+  imageRouter.get('/:username', [
+    param('username')
+    .trim().escape()
+  ], async (req, res) => {
     const username = req.params.username;
     const page = parseInt(req.query.page as string);
     const limit = parseInt(req.query.limit as string);
@@ -56,13 +67,14 @@ export default (env = 'dev') => {
   })
 
   // retrive the image file
-  imageRouter.get('/:image_id/picture', isAuthenticated, async (req, res) => {
+  imageRouter.get('/:image_id/picture', [
+    param('image_id')
+    .trim().escape()
+  ],isAuthenticated, async (req, res) => {
     const _id = req.params.image_id;
     try {
       const image = await imagedb.findOne({_id}) as Image;
       if (!image) return res.status(404).end(`imageId ${_id} does not exists`);
-      console.log(image);
-      console.log('match :', image.owner_id, req.session.username, image.owner_id !== req.session.username, image.isPublic== false, typeof image.isPublic );
       if (image.isPublic == 'false' && image.owner_id !== req.session.username) return res.status(403).end("forbidden, you cannot retrieve other users' private image");
       res.setHeader('Content-Type', image.file.mimetype);
       return res.sendFile(image.file.path);
@@ -72,7 +84,10 @@ export default (env = 'dev') => {
   });
 
 
-  imageRouter.delete('/:id/', isAuthenticated, async (req, res) => {
+  imageRouter.delete('/:id/', [
+    param('id')
+    .trim().escape()
+  ],isAuthenticated, async (req, res) => {
     try {
       const found = await imagedb.find({_id: req.params.id});
       const image: any = found[0];
@@ -89,7 +104,10 @@ export default (env = 'dev') => {
     }
   })
 
-  imageRouter.patch('/:id/', isAuthenticated, async (req, res) => {
+  imageRouter.patch('/:id/', [check('status').isIn(['true', 'false']), 
+  param('id').trim().escape()],
+  isAuthenticated, validateInput, 
+  async (req, res) => {
     const status: boolean = req.body.status;
     if (status === undefined) return res.status(400).end('isPublic property is not provided');
     try{
@@ -108,7 +126,3 @@ export default (env = 'dev') => {
 
   return imageRouter;
 }
-
-
-
-// export default imageRouter;

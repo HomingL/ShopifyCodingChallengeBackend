@@ -75,7 +75,6 @@ describe('POST /auth/signout/', () => {
 
     const signin = await request(app).post("/auth/signin").send(body);
     const cookie = signin.headers['set-cookie'];
-    console.log(cookie)
 
     const response = await request(app).get("/auth/signout").set('Cookie', cookie);
     expect(response.status).toBe(200);

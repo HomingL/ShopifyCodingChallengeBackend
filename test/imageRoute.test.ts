@@ -179,15 +179,6 @@ describe('GET /api/images/:image_id/picture', () => {
 describe('DELETE /api/images/:id', () => {
 
   test('delete image without authentication', async () => {
-    // const auth = {
-    //   username: 'test-username',
-    //   password: 'test-password',
-    // }
-
-    // const signin = await request(app).post("/auth/signin").send(auth);
-    // const cookie = signin.headers['set-cookie'];
-
-    // console.log('cookie', cookie)
 
     const response = await request(app).del('/api/images/0').send();
     // const responseBody = JSON.parse(response.text);

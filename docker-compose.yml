@@ -2,8 +2,8 @@ version: '3'
 services:
   image-repo:
     container_name: image-repo
-    # image: lihongming1/image-repo:1.0.0
-    build: ./
+    image: lihongming1/image-repo:latest
+    # build: ./
     working_dir: /var/opt
     ports: 
       - 5000:5000
